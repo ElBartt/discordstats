@@ -9,7 +9,7 @@ const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric
 const interval = 60;
 
 bot.on("ready", () => {
-    console.log(`Logged in as ${bot.user.tag}!`)
+    console.log(`Logged in as ${bot.user.tag} (bot)!`)
     bot.user.setPresence({
         activity: {
             name: 'Plague INC.',
