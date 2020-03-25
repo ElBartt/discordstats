@@ -58,6 +58,7 @@ async function scan() {
 
     fs.writeFile(process.env.STATS_FILE_PATH, JSON.stringify(bot.stats, null, 4), err => {
         if (err) throw err;
+        console.log('[file] saving done');
     });
 }
 
