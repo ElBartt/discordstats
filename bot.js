@@ -24,30 +24,36 @@ bot.on("ready", () => {
 
 async function scan() {
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
-        const id = user.presence.member.id;
+	if (!user.presence.member) { 
+		console.log('probleme', user);
+	} else {
+	        const id = user.presence.member.id;
+	
+	        // Creation de l'utilisateur dans la BDD
+	        if (bot.stats[id] === undefined) {
+	    		bot.stats[id] = { "name": user.presence.member.displayName, "activities": {} }
+	        }	
+	
+	        // Check de la présence
+	        userStats = bot.stats[id];
+	        if (userStats[user.presence.status] === undefined) {
+	            userStats[user.presence.status] = 0;
+	        } else {
+	            userStats[user.presence.status] += interval;
+	        }
+	
+	        // Check de l'activité
+	        userStatActivities = userStats["activities"];
+	        user.presence.activities.forEach(activity => {
+	            if (userStatActivities[activity.name] === undefined) {
+                	userStatActivities[activity.name] = 0;
+        	    } else {
+	                userStatActivities[activity.name] += interval;
+            		}
+        	});
 
-        // Creation de l'utilisateur dans la BDD
-        if (bot.stats[id] === undefined) {
-            bot.stats[id] = { "name": user.presence.member.displayName, "activities": {} }
-        } 
-
-        // Check de la présence
-        userStats = bot.stats[id];
-        if (userStats[user.presence.status] === undefined) {
-            userStats[user.presence.status] = 0;
-        } else {
-            userStats[user.presence.status] += interval;
-        }
-
-        // Check de l'activité
-        userStatActivities = userStats["activities"];
-        user.presence.activities.forEach(activity => {
-            if (userStatActivities[activity.name] === undefined) {
-                userStatActivities[activity.name] = 0;
-            } else {
-                userStatActivities[activity.name] += interval;
-            }
-        });
+		console.log(`saving ${user.presence.member.displayName} DONE`);
+	}
     });
 
     fs.writeFile(process.env.STATS_FILE_PATH, JSON.stringify(bot.stats, null, 4), err => {
