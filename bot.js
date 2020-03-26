@@ -8,7 +8,7 @@ bot.daily = require(process.env.DAILY_FILE_PATH)
 
 const interval = 60;
 
-untrackedActivit
+untrackedActivity = []
 
 bot.on("ready", () => {
     console.log(`Logged in as ${bot.user.tag} (bot)!`)
