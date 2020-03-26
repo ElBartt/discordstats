@@ -25,7 +25,7 @@ bot.on("ready", () => {
     // Reset daily at midnight
     setInterval(function(){
         var date = new Date();
-        if(date.getHours() === 0){
+        if(date.getHours() === 7){
             fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
                 if (err) throw err;
             });
