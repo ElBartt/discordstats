@@ -4,9 +4,11 @@ const fs = require("fs");
 const Discord = require("discord.js")
 const bot = new Discord.Client()
 bot.stats = require(process.env.STATS_FILE_PATH)
+bot.daily = require(process.env.DAILY_FILE_PATH)
 
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 const interval = 60;
+
+untrackedActivit
 
 bot.on("ready", () => {
     console.log(`Logged in as ${bot.user.tag} (bot)!`)
@@ -20,71 +22,97 @@ bot.on("ready", () => {
 
     scan();
     setInterval(scan, interval * 1000);
+    // Reset daily at midnight
+    setInterval(function(){
+        var date = new Date();
+        if(date.getHours() === 0){
+            fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
+                if (err) throw err;
+            });
+        }
+    }, 60 * 60 * 1000);
 })
 
 async function scan() {
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
-	if (!user.presence.member) { 
-		console.log('there is a problem with the following user', user);
-	} else {
-	        const id = user.presence.member.id;
-	
-	        // Creation de l'utilisateur dans la BDD
-	        if (bot.stats[id] === undefined) {
-	    		bot.stats[id] = { "name": user.presence.member.displayName, "activities": {} }
-	        }	
-	
-	        // Check de la présence
-	        userStats = bot.stats[id];
-	        if (userStats[user.presence.status] === undefined) {
-	            userStats[user.presence.status] = 0;
-	        } else {
-	            userStats[user.presence.status] += interval;
-	        }
-	
-	        // Check de l'activité
-	        userStatActivities = userStats["activities"];
-	        user.presence.activities.forEach(activity => {
-	            if (userStatActivities[activity.name] === undefined) {
-                	userStatActivities[activity.name] = 0;
-        	    } else {
-	                userStatActivities[activity.name] += interval;
-            		}
-        	});
+        if (!user.presence.member) { 
+            console.log('there is a problem with the following user', user);
+        } else {
+            const id = user.presence.member.id;
 
-		console.log(`Saving ${user.presence.member.displayName} DONE`);
-	}
+            // Creation de l'utilisateur dans la BDD
+            if (bot.stats[id] === undefined) {
+                bot.stats[id] = { "name": user.presence.member.displayName, "activities": {} }
+            }
+            
+            if (bot.daily[id] === undefined) {
+                bot.daily[id] = { "name": user.presence.member.displayName, "activities": {} }
+            }
+
+            // Check de la présence
+            userStats = bot.stats[id];
+            if (userStats[user.presence.status] === undefined) {
+                userStats[user.presence.status] = 0;
+            } else {
+                userStats[user.presence.status] += interval;
+            }
+
+            userStatsDaily = bot.daily[id];
+            if (userStatsDaily[user.presence.status] === undefined) {
+                userStatsDaily[user.presence.status] = 0;
+            } else {
+                userStatsDaily[user.presence.status] += interval;
+            }
+            
+            // Check de l'activité
+            userStatActivities = userStats["activities"];
+            user.presence.activities.forEach(activity => {
+                if (userStatActivities[activity.name] === undefined) {
+                    userStatActivities[activity.name] = 0;
+                } else {
+                    userStatActivities[activity.name] += interval;
+                    }
+            });
+            
+            userStatActivitiesDaily = userStatsDaily["activities"];
+            user.presence.activities.forEach(activity => {
+                if (userStatActivitiesDaily[activity.name] === undefined) {
+                    userStatActivitiesDaily[activity.name] = 0;
+                } else {
+                    userStatActivitiesDaily[activity.name] += interval;
+                }
+            });
+            console.log(`Saving ${user.presence.member.displayName} DONE`);
+        }
     });
 
     fs.writeFile(process.env.STATS_FILE_PATH, JSON.stringify(bot.stats, null, 4), err => {
         if (err) throw err;
     });
-    console.log('[file] saving done');
-}
+    console.log('[file] Saving global DONE');
 
-function displayMultipleMembers(channel, members) {
-    members.forEach(m => {
-        displayMemberDetails(channel, m);
-    })
-}
-
-function displayMemberDetails(channel, member) {
-    output = member.displayName + ' a joint le ' + member.joinedAt.toLocaleDateString('fr-FR', options);
-    channel.send(output);
+    fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify(bot.daily, null, 4), err => {
+        if (err) throw err;
+    });
+    console.log('[file] Saving daily DONE');
 }
 
 bot.on("message", msg => {
     if (msg.content.startsWith('!stats') && !msg.author.bot) {
         stats = bot.stats[msg.member.id];
 
-        firstParam = msg.content.split(' ')[1];
+        msgSplit = msg.content.split(' ');
+        firstParam = msgSplit[1];
+        secondParam = msgSplit[2];
         if (firstParam && firstParam.length === 18) {
             if (bot.stats.hasOwnProperty(firstParam)) {
                 stats = bot.stats[firstParam];
             }
         } else if (firstParam === "global") {
-            allStats(msg.channel);
+            allStats(msg.channel, secondParam === "daily");
             return;
+        } else if (firstParam === "daily") {
+            stats = bot.daily[msg.member.id];
         }
         
         msg.channel.send(new Discord.MessageEmbed()
@@ -95,55 +123,6 @@ bot.on("message", msg => {
             .setFooter("provided by Le Voisin")
             .setTimestamp()
         )
-    }
-    if (msg.content.startsWith('bot') && !msg.author.bot) {
-        params = msg.content.split(' ');
-        params.shift();
-
-        if (params) {
-            if (params[0] === "channels") {
-                for (let [id, chan] of msg.guild.channels.cache) {
-                    if (chan.type !== 'voice') { continue; }
-                    reply = chan.name + ' créé le ' + chan.createdAt;
-                    msg.channel.send(reply);
-                }
-            }
-            if (params[0] === "users") {
-                membersSorted = msg.guild.members.cache.map((member, id) => member).slice().sort((a, b) => b.joinedAt - a.joinedAt)
-
-                if (params.length === 1) {
-                    msg.channel.send(`Il y a ${membersSorted.length} membres sur le serveur`);
-                    displayMultipleMembers(msg.channel, membersSorted);
-                } else {
-                    switch (params[1]) {
-                        case "help":
-                            output = 'bot users last : envoie le dernier membre ajouté' +
-                                '\nbot users first : envoie le premier membre ajouté' +
-                                '\nbot users me : envoie toi connard' +
-                                '\nbot users <mentions> : envoie tout les membres mentionnés' +
-                                '\nbot users : envoie tout les membres';
-                            msg.channel.send(output);
-                            break;
-                        case "first":
-                            displayMemberDetails(msg.channel, membersSorted[membersSorted.length - 1]);
-                            break;
-                        case "last":
-                            displayMemberDetails(msg.channel, membersSorted[0]);
-                            break;
-                        case "me":
-                            displayMemberDetails(msg.channel, membersSorted.filter(m => m.user.id === msg.author.id)[0]);
-                            break;
-                        default:
-                            if (msg.mentions.members.size) {
-                                membs = msg.mentions.members.map((member, id) => member).slice().sort((a, b) => b.joinedAt - a.joinedAt)
-                                displayMultipleMembers(msg.channel, membs);
-                            } else {
-                                msg.channel.send('comprend po. Essaye \'bot users help\' pour voir...');
-                            }
-                    }
-                }
-            }
-        }
     }
 })
 
@@ -172,13 +151,19 @@ function activity(stats) {
     return summary === '' ? 'Aucune activité enregistré' : summary;
 }
 
-function allStats(channel) {
+function allStats(channel, daily) {
+    stats = bot.stats;
     statsGames = {};
     statsActivities = {};
     statsPresence = {};
-    for (const user in bot.stats) {
-        if (bot.stats.hasOwnProperty(user)) {
-            const userid = bot.stats[user];
+
+    if (daily) {
+        stats = bot.daily
+    }
+
+    for (const user in stats) {
+        if (stats.hasOwnProperty(user)) {
+            const userid = stats[user];
             const name = userid["name"];
             const activities = userid["activities"];
             timePlayed = 0;
