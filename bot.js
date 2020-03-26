@@ -8,7 +8,7 @@ bot.daily = require(process.env.DAILY_FILE_PATH)
 
 const interval = 60;
 
-untrackedActivity = []
+untrackedActivity = ["Custom Status", "Spotify", "Call of Duty: Modern Warfare"];
 
 bot.on("ready", () => {
     console.log(`Logged in as ${bot.user.tag} (bot)!`)
@@ -66,7 +66,7 @@ async function scan() {
             
             // Check de l'activité
             userStatActivities = userStats["activities"];
-            user.presence.activities.forEach(activity => {
+            user.presence.activities.filter(activity => !untrackedActivity.includes(activity.name)).forEach(activity => {
                 if (userStatActivities[activity.name] === undefined) {
                     userStatActivities[activity.name] = 0;
                 } else {
@@ -75,7 +75,7 @@ async function scan() {
             });
             
             userStatActivitiesDaily = userStatsDaily["activities"];
-            user.presence.activities.forEach(activity => {
+            user.presence.activities.filter(activity => !untrackedActivity.includes(activity.name)).forEach(activity => {
                 if (userStatActivitiesDaily[activity.name] === undefined) {
                     userStatActivitiesDaily[activity.name] = 0;
                 } else {
