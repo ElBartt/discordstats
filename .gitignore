@@ -105,3 +105,4 @@ dist
 
 stats/
 package-lock.json
+server_pull.sh

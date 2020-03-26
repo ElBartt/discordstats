@@ -52,7 +52,7 @@ async function scan() {
             		}
         	});
 
-		console.log(`Saving ${user.presence.member.displayName} DONE`);
+		console.log(`saving ${user.presence.member.displayName} DONE`);
 	}
     });
 
