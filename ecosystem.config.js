@@ -6,6 +6,6 @@ module.exports = {
     autorestart: true,
     watch: true,
     max_memory_restart: '2G',
-    ignore_watch : ["node_modules", "stats/stats.json"],
+    ignore_watch : ["node_modules", "stats/stats.json", "stats/daily.json"],
   }],
 };
