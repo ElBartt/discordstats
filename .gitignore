@@ -108,3 +108,5 @@ package-lock.json
 server_pull.sh
 server_logs.sh
 server_list.sh
+server_stop_bot.sh
+server_start_bot.sh
