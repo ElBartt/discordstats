@@ -34,6 +34,7 @@ bot.on("ready", () => {
 })
 
 async function scan() {
+    console.log(new Date());
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
         if (!user.presence.member) { 
             console.log('there is a problem with the following user', user);
