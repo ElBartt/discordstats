@@ -27,11 +27,14 @@ bot.on("ready", () => {
 async function scan() {
     var date = new Date();
     console.log(date);
-    console.log(date.getHours());
-    if(date.getHours() === 13){
+    console.log(date.getHours(), date.getMinutes());
+    if(date.getHours() === 14 && date.getMinutes() === 2){
+        console.log('[file] Reseting daily...')
         fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
             if (err) throw err;
+            console.log(err)
         });
+        console.log('[file] ... DONE')
     }
 
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
