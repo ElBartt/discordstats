@@ -22,21 +22,13 @@ bot.on("ready", () => {
 
     scan();
     setInterval(scan, interval * 1000);
-    // Reset daily at midnight
-    setInterval(function(){
-        var date = new Date();
-        if(date.getHours() === 7){
-            fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
-                if (err) throw err;
-            });
-        }
-    }, 60 * 60 * 1000);
 })
 
 async function scan() {
     var date = new Date();
     console.log(date);
-    if(date.getHours() === 14){
+    console.log(date.getHours());
+    if(date.getHours() === 13){
         fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
             if (err) throw err;
         });
