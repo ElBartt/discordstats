@@ -28,13 +28,13 @@ async function scan() {
     var date = new Date();
     console.log(date);
     console.log(date.getHours(), date.getMinutes());
-    if(date.getHours() === 14 && date.getMinutes() === 6){
+    if(date.getHours() === 14 && date.getMinutes() === 14){
         console.log('[file] Reseting daily...')
         fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
             if (err) throw err;
-            console.log("[file] ERREUR:", err);
+            console.log('[file] ... DONE')
+            console.log(bot.daily);
         });
-        console.log('[file] ... DONE')
     }
 
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
@@ -89,15 +89,17 @@ async function scan() {
         }
     });
 
+    console.log('[file] Saving global ...');
     fs.writeFile(process.env.STATS_FILE_PATH, JSON.stringify(bot.stats, null, 4), err => {
         if (err) throw err;
+        console.log('[file] ... DONE')
     });
-    console.log('[file] Saving global DONE');
 
+    console.log('[file] Saving daily ...');
     fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify(bot.daily, null, 4), err => {
         if (err) throw err;
+        console.log('[file] ... DONE')
     });
-    console.log('[file] Saving daily DONE');
 }
 
 bot.on("message", msg => {
