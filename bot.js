@@ -28,7 +28,8 @@ async function scan() {
     var date = new Date();
     console.log(date);
     console.log(date.getHours(), date.getMinutes());
-    if(date.getHours() === 14 && date.getMinutes() === 14){
+    if(date.getHours() === 14 && date.getMinutes() === 18){
+        bot.daily = {};
         console.log('[file] Reseting daily...')
         fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
             if (err) throw err;
