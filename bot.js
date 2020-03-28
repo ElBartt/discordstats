@@ -34,7 +34,14 @@ bot.on("ready", () => {
 })
 
 async function scan() {
-    console.log(new Date());
+    var date = new Date();
+    console.log(date);
+    if(date.getHours() === 14){
+        fs.writeFile(process.env.DAILY_FILE_PATH, JSON.stringify({}, null, 4), err => {
+            if (err) throw err;
+        });
+    }
+
     bot.users.cache.map(users => users).filter(user => user.presence.status !== "offline" && !user.bot).forEach(user => {
         if (!user.presence.member) { 
             console.log('there is a problem with the following user', user);
