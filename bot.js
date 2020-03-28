@@ -27,7 +27,7 @@ bot.on("ready", () => {
 async function scan() {
     var date = new Date();
     console.log(date);
-    if(date.getHours() === 14 && date.getMinutes() === 21){
+    if(date.getHours() === 14 && date.getMinutes() === 25){
         bot.daily = {};
         console.log('[file] Reseting daily DONE');
     }
