@@ -65,19 +65,21 @@ async function scan() {
             // Check de l'activité
             userStatActivities = userStats["activities"];
             user.presence.activities.filter(activity => !untrackedActivity.includes(activity.name)).forEach(activity => {
-                if (userStatActivities[activity.name] === undefined) {
-                    userStatActivities[activity.name] = 0;
+                name = activity.name === "Twitch" ? activity.state : activity.name;
+                if (userStatActivities[name] === undefined) {
+                    userStatActivities[name] = 0;
                 } else {
-                    userStatActivities[activity.name] += interval;
-                    }
+                    userStatActivities[name] += interval;
+                }
             });
             
             userStatActivitiesDaily = userStatsDaily["activities"];
             user.presence.activities.filter(activity => !untrackedActivity.includes(activity.name)).forEach(activity => {
-                if (userStatActivitiesDaily[activity.name] === undefined) {
-                    userStatActivitiesDaily[activity.name] = 0;
+                name = activity.name === "Twitch" ? activity.state : activity.name;
+                if (userStatActivitiesDaily[name] === undefined) {
+                    userStatActivitiesDaily[name] = 0;
                 } else {
-                    userStatActivitiesDaily[activity.name] += interval;
+                    userStatActivitiesDaily[name] += interval;
                 }
             });
             console.log(`Saving ${user.presence.member.displayName} DONE`);
@@ -87,7 +89,7 @@ async function scan() {
     console.log('[file] Saving global ...');
     fs.writeFile(process.env.STATS_FILE_PATH, JSON.stringify(bot.stats, null, 4), err => {
         if (err) throw err;
-        console.log('[file] ... DONE')
+        console.log('[file] ... DONE');
     });
 
     console.log('[file] Saving daily ...');
@@ -143,7 +145,7 @@ function activity(stats) {
     summary = ''
     activities = stats["activities"]
     for (const activity in activities) {
-        if (activities.hasOwnProperty(activity)) {
+        if (!untrackedActivity.includes(activity.name) && activities.hasOwnProperty(activity)) {
             const element = activities[activity];
             summary += `${activity} - ${toTime(element)}\n`
         }
@@ -169,7 +171,7 @@ function allStats(channel, daily) {
             timePlayed = 0;
             timePresence = 0;
             for (const game in activities) {
-                if (activities.hasOwnProperty(game)) {
+                if (!untrackedActivity.includes(activity.name) && activities.hasOwnProperty(game)) {
                     if (game !== "Custom Status") {
                         const value = activities[game];
                         timePlayed += value;
