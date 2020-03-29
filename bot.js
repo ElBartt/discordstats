@@ -24,7 +24,7 @@ bot.on("ready", () => {
     setInterval(scan, interval * 1000);
 })
 
-async function scan() {
+function scan() {
     var date = new Date();
     console.log(date);
     if(date.getHours() === 8 && date.getMinutes() === 0){
